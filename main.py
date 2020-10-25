@@ -3,30 +3,64 @@ import time
 import random
 from collections import deque
 
-
-def game_loop(win, background, img_dic):
-    win.fill((0, 0, 0))
-    win.blit(background, (-100, 0))
-
+try:
     orbs = [pygame.image.load('pictures/'+i) for i in [ 'quas_orb.png', 'wex_orb.png', 'exort_orb.png']]
+    background = pygame.image.load("pictures/background_invoker.png")
+    images_raw = 'ala', 'cs', 'iw', 'fs', 'ss', 'chm', \
+             'db', 'emp', 'gw', 'tor', 'quas', 'exort', 'wex'
+    images = [pygame.image.load('pictures/' + i + ".png") for i in images_raw]
+
+    img_dic = {}
+    for i in range(len(images)-3):
+        img_dic[images_raw[i]] = images[i]
+    strt_btn = pygame.image.load("pictures/strt_btn.png")
+    strt_btn_prssd = pygame.image.load("pictures/strt_btn_prssd.png")
+except pygame.error:
+    print("Images were not able to load.")
+    exit()
+
+def game_loop(win, background, img_dic, images_raw):
+    win.fill((0, 0, 0))
+    win.blit(background, (0, 0))
+    for i in range(3):
+        pygame.draw.circle(win, (169, 169, 169), (i * 100+460+50, 400+50), 50, 1)
     orbs_queue = deque()
     orbs_dic = {'Q': orbs[0], 'W': orbs[1], 'E': orbs[2]}
-    spells_dic = {'QQQ': "cs", 'QQW': "gw", 'QQE': "iw",
-                  'QWQ': "gw", 'QWW': "tor", 'QWE': "db",
-                  'QEQ': "iw", 'QEW': "db", 'QEE': "fs",
-                  'WQQ': "gw", 'WQW': "tor", 'WQE': "db",
-                  'WWQ': "tor", 'WWW': "emp", 'WWE': "ala",
-                  'WEQ': "db", 'WEW': "ala", 'WEE': "chm",
-                  'EQQ': "iw", 'EQW': "db", 'EQE': "fs",
-                  'EWQ': "db", 'EWW': "ala", 'EWE': "chm",
-                  'EEQ': "fs", 'EEW': "chm", 'EEE': "ss"}
+    spells_dic = {'QQQ': "cs", 'WWW': "emp", 'EEE': "ss",
+                  'QQW': "gw", 'QWQ': "gw", 'WQQ': "gw",
+                  'QQE': "iw", 'QEQ': "iw", 'EQQ': "iw",
+                  'QWW': "tor", 'WWQ': "tor", 'WQW': "tor",
+                  'QWE': "db", 'QEW': "db", 'WQE': "db",
+                  'WEQ': "db", 'EQW': "db", 'EWQ': "db",
+                  'QEE': "fs", 'EQE': "fs", 'EEQ': "fs",
+                  'WWE': "ala", 'WEW': "ala", 'EWW': "ala",
+                  'WEE': "chm", 'EWE': "chm", 'EEW': "chm"}
+
+    answered = True
+    key = None
+    changed = False
+    last = None
+
     while True:
+
+        if answered:
+            spells = images_raw[:len(images_raw) - 3]
+            key = random.choice(spells)
+            while key == last:
+                key = random.choice(spells)
+            last = key
+            win.blit(img_dic[key], (550, 550))
+            answered = False
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                return
+                pygame.quit()
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_r and len("".join(list(orbs_queue))) >= 3:
-                    win.blit(img_dic[spells_dic["".join(list(orbs_queue))]], (550 ,600))
+                if event.key == pygame.K_r:
+                    orb_str = "".join(list(orbs_queue))
+                    if spells_dic[orb_str] == key and len(orb_str) >= 3:
+                        answered = True
+                    # win.blit(img_dic[spells_dic["".join(list(orbs_queue))]], (550 ,600))
                 elif event.key == pygame.K_w:
                     orbs_queue.append('W')
                 elif event.key == pygame.K_e:
@@ -36,38 +70,31 @@ def game_loop(win, background, img_dic):
 
             if len(orbs_queue) > 3:
                 orbs_queue.popleft()
-        for i in range(len(orbs_queue)):
-            win.blit(orbs_dic[orbs_queue[i]], (i * 100+460, 450))
-        pass
-        pygame.display.update()
-    pass
+                changed = True
+
+        if changed or len(orbs_queue) <= 3:
+            changed = False
+            for i in range(len(orbs_queue)):
+                win.blit(orbs_dic[orbs_queue[i]], (i * 100+460, 400))
+            pygame.display.update()
 
 
 def setup(win, background, images):
     win.fill((0, 0, 0))
-    win.blit(background, (-100, 0))
+    win.blit(background, (0, 0))
     for i in range(len(images)):
         win.blit(images[i], (-30 + i * 100, 370))
 
 
 def main():
     pygame.init()
-
+    pygame.display.set_caption("Acolyte")
+    pygame.display.set_icon(random.choice(images))
     width, height = 1240, 800
     pygame.display.set_mode((width, height))
 
     run = True
     offset = 160
-
-    background = pygame.image.load("pictures/background_invoker.png")
-    images_raw = 'ala.png', 'cs.png', 'iw.png', 'fs.png', 'ss.png', 'chm.png', \
-             'db.png', 'emp.png', 'gw.png', 'tor.png', 'quas.png', 'exort.png', 'wex.png'
-    images = [pygame.image.load('pictures/' + i) for i in images_raw]
-    img_dic = {}
-    for i in range(len(images)-3):
-        img_dic[images_raw[i].split('.')[0]] = images[i]
-    strt_btn = pygame.image.load("pictures/strt_btn.png")
-    strt_btn_prssd = pygame.image.load("pictures/strt_btn_prssd.png")
 
     win = pygame.display.get_surface()
 
@@ -85,7 +112,7 @@ def main():
            and play_btn_pos[1] + offset * 2 > mouse[1] > play_btn_pos[1]:
             win.blit(strt_btn_prssd, (play_btn_pos[0] - offset, play_btn_pos[1]))
             if click[0] == 1:
-                game_loop(win, background, img_dic)
+                game_loop(win, background, img_dic, images_raw)
                 setup(win, background, images)
         else:
             win.blit(strt_btn, (play_btn_pos[0] - offset, play_btn_pos[1]))
