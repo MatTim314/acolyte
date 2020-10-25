@@ -3,23 +3,25 @@ import time
 import random
 from collections import deque
 
-try:
-    orbs = [pygame.image.load('pictures/'+i) for i in [ 'quas_orb.png', 'wex_orb.png', 'exort_orb.png']]
-    background = pygame.image.load("pictures/background_invoker.png")
-    images_raw = 'ala', 'cs', 'iw', 'fs', 'ss', 'chm', \
-             'db', 'emp', 'gw', 'tor', 'quas', 'exort', 'wex'
-    images = [pygame.image.load('pictures/' + i + ".png") for i in images_raw]
+def load_files():
+    try:
+        orbs = [pygame.image.load('pictures/'+i) for i in [ 'quas_orb.png', 'wex_orb.png', 'exort_orb.png']]
+        background = pygame.image.load("pictures/background_invoker.png")
+        images_raw = 'ala', 'cs', 'iw', 'fs', 'ss', 'chm', \
+                 'db', 'emp', 'gw', 'tor', 'quas', 'exort', 'wex'
+        images = [pygame.image.load('pictures/' + i + ".png") for i in images_raw]
 
-    img_dic = {}
-    for i in range(len(images)-3):
-        img_dic[images_raw[i]] = images[i]
-    strt_btn = pygame.image.load("pictures/strt_btn.png")
-    strt_btn_prssd = pygame.image.load("pictures/strt_btn_prssd.png")
-except pygame.error:
-    print("Images were not able to load.")
-    exit()
+        img_dic = {}
+        for i in range(len(images)-3):
+            img_dic[images_raw[i]] = images[i]
+        strt_btn = pygame.image.load("pictures/strt_btn.png")
+        strt_btn_prssd = pygame.image.load("pictures/strt_btn_prssd.png")
+        return images, background, img_dic, images_raw, strt_btn, strt_btn_prssd, orbs
+    except pygame.error:
+        print("Images were not able to load.")
+        exit()
 
-def game_loop(win, background, img_dic, images_raw):
+def game_loop(win, background, img_dic, images_raw, orbs):
     win.fill((0, 0, 0))
     win.blit(background, (0, 0))
     for i in range(3):
@@ -87,18 +89,18 @@ def setup(win, background, images):
 
 
 def main():
+    images, background, img_dic, images_raw, strt_btn, strt_btn_prssd, orbs = load_files()
     pygame.init()
     pygame.display.set_caption("Acolyte")
     pygame.display.set_icon(random.choice(images))
     width, height = 1240, 800
-    pygame.display.set_mode((width, height))
-
-    run = True
     offset = 160
-
+    pygame.display.set_mode((width, height))
     win = pygame.display.get_surface()
 
     setup(win, background, images)
+
+    run = True
     while run:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -112,7 +114,7 @@ def main():
            and play_btn_pos[1] + offset * 2 > mouse[1] > play_btn_pos[1]:
             win.blit(strt_btn_prssd, (play_btn_pos[0] - offset, play_btn_pos[1]))
             if click[0] == 1:
-                game_loop(win, background, img_dic, images_raw)
+                game_loop(win, background, img_dic, images_raw, orbs)
                 setup(win, background, images)
         else:
             win.blit(strt_btn, (play_btn_pos[0] - offset, play_btn_pos[1]))
